@@ -1,0 +1,17 @@
+[package]
+name = "hpx-sys"
+authors = ["Dikshant <dikshant.073@gmail.com>", "Shreyas Atre <shreyasatre16@gmail.com>"]
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+[lib]
+name = "hpx_sys"
+path = "src/lib.rs"
+
+[dependencies]
+cxx = "1.0"
+
+[build-dependencies]
+cxx-build = "1.0"
+pkg-config = "0.3.30"
