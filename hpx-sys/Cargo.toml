@@ -11,7 +11,11 @@ path = "src/lib.rs"
 
 [dependencies]
 cxx = "1.0"
+serial_test = "*"
 
 [build-dependencies]
 cxx-build = "1.0"
 pkg-config = "0.3.30"
+
+[dev-dependencies]
+serial_test = "*"
