@@ -65,12 +65,8 @@ fn main() {
     println!("cargo::rustc-link-lib=hpx_iostreams");
     println!("cargo:rustc-link-lib=dylib=hpx");
     //cxx_build::bridge("src/lib.rs")
-    build
-        .file("include/wrapper.cpp")
-        .std("c++17")
-        .compile("hpx-sys");
+    build.std("c++17").compile("hpx-sys");
 
     println!("cargo:rerun-if-changed=src/lib.rs");
     println!("cargo:rerun-if-changed=include/wrapper.h");
-    println!("cargo:rerun-if-changed=include/wrapper.cpp");
 }
