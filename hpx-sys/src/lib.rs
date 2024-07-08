@@ -58,6 +58,5 @@ mod tests {
             assert_eq!(result, 0);
             //thread::sleep(Duration::from_millis(100));
         }
-        println!("test_init_finalize: Completed");
     }
 }
