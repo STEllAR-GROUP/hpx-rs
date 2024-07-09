@@ -52,7 +52,6 @@ fn main() {
         lib_rs_path.display()
     );
     let mut build = cxx_build::bridge(lib_rs_path);
-    //let hpx_application = try_hpx_application();
     let hpx_application = match try_hpx_application() {
         Ok(lib) => lib,
         Err(_) => panic!("Failed to find hpx_application using pkg-config"),
@@ -64,7 +63,7 @@ fn main() {
 
     println!("cargo::rustc-link-lib=hpx_iostreams");
     println!("cargo:rustc-link-lib=dylib=hpx");
-    //cxx_build::bridge("src/lib.rs")
+
     build.std("c++17").compile("hpx-sys");
 
     println!("cargo:rerun-if-changed=src/lib.rs");
