@@ -10,6 +10,8 @@ Bindings to hpx for interoperating with stellar-group hpx library for
 concurrency and parallelism.
 """
 categories = ["api-bindings"]
+license = "BSL-1.0"
+publish = false
 
 [dependencies]
 hpx-sys = { path = "hpx-sys", version = "0.1.0" }
