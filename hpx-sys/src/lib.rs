@@ -1,4 +1,4 @@
-//!
+#![doc(html_root_url = "https://github.com/STEllAR-GROUP/hpx-rs")]
 #![allow(bad_style, non_camel_case_types, unused_extern_crates)]
 #![allow(dead_code, unused_imports)]
 
