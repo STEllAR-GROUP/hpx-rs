@@ -56,7 +56,6 @@ mod tests {
         unsafe {
             let result = ffi::init(dummy_main, argc, argv.as_mut_ptr());
             assert_eq!(result, 0);
-            //thread::sleep(Duration::from_millis(100));
         }
     }
 }
