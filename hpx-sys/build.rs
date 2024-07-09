@@ -61,9 +61,6 @@ fn main() {
         build.include(path);
     }
 
-    println!("cargo::rustc-link-lib=hpx_iostreams");
-    println!("cargo:rustc-link-lib=dylib=hpx");
-
     build.std("c++17").compile("hpx-sys");
 
     println!("cargo:rerun-if-changed=src/lib.rs");
