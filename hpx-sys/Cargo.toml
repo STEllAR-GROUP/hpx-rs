@@ -1,0 +1,23 @@
+[package]
+name = "hpx-sys"
+authors = ["Dikshant <dikshant.073@gmail.com>", "Shreyas Atre <shreyasatre16@gmail.com>"]
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+description = "Native bindings to the hpx library"
+license = "BSL-1.0"
+
+[lib]
+name = "hpx_sys"
+path = "src/lib.rs"
+
+[dependencies]
+cxx = "1.0"
+serial_test = "*"
+
+[build-dependencies]
+cxx-build = "1.0"
+pkg-config = "0.3.30"
+
+[dev-dependencies]
+serial_test = "*"
