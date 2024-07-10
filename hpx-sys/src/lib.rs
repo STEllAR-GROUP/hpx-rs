@@ -42,7 +42,6 @@ mod tests {
     }
 
     #[test]
-    //#[serial]
     fn test_init_finalize() {
         let (argc, mut argv) = create_c_args(&["testing", "arg1", "arg2"]);
 
