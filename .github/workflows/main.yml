@@ -1,0 +1,57 @@
+name: CI
+on:
+  pull_request:
+    branches: [ "main" ]
+  merge_group:
+    branches: [ "main" ]
+  workflow_dispatch:
+env:
+  CARGO_TERM_COLOR: always
+  
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      # HPX installation steps
+      - name: Install dependencies
+        run: brew install pkg-config hwloc llvm boost cmake ninja boost open-mpi asio swig
+      - name: Clone HPX
+        run: git clone https://github.com/STEllAR-GROUP/hpx.git
+      - name: Create install directory
+        run: mkdir $HOME/hpx-install
+      - name: Configure HPX
+        run: cd hpx && mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=$HOME/hpx-install -DHPX_WITH_FETCH_ASIO=ON -DHPX_WITH_MALLOC=system -DHPX_WITH_PKGCONFIG=ON -DCMAKE_BUILD_TYPE=Release -DHPX_WITH_EXAMPLES=Off -DHPX_WITH_TESTS=Off ..
+      - name: Build HPX
+        run: cd /Users/runner/work/mac-l/mac-l/hpx/build && make -j
+      - name: Install HPX
+        run: cd /Users/runner/work/mac-l/mac-l/hpx/build && make install
+      - name: Check HPX installation
+        run: |
+          if [ -d ~/hpx-install/lib/pkgconfig ]; then
+            echo "HPX installation successful: lib/pkgconfig directory found"
+          else
+            echo "Error: lib/pkgconfig directory not found in HPX installation"
+            exit 1
+          fi
+   
+      - uses: actions/checkout@v4
+      - name: Set PKG_CONFIG_PATH
+        run: echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$HOME/hpx-install/lib/pkgconfig" >> $GITHUB_ENV
+        
+      - name: Set DYLD_LIBRARY_PATH
+        run: echo "DYLD_LIBRARY_PATH=$HOME/hpx-install/lib:$DYLD_LIBRARY_PATH" >> $GITHUB_ENV
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      
+      - name: Test hpx-rs
+        run: cargo check && cargo test
+      - name: Test hpx-sys
+        working-directory: hpx-sys
+        run: cargo check && cargo test
+
+      - name: Check formatting
+        run: cargo fmt -- --check
