@@ -1,10 +1,9 @@
-name: CI
+name: MacOS - Build and Test
 on:
   pull_request:
     branches: [ "main" ]
-  merge_group:
+  push:
     branches: [ "main" ]
-  workflow_dispatch:
 env:
   CARGO_TERM_COLOR: always
   
