@@ -60,3 +60,16 @@ inline void hpx_copy(const rust::Vec<int32_t>& src, rust::Vec<int32_t>& dest) {
         dest.push_back(item);
     }
 }
+
+inline void hpx_copy_n(const rust::Vec<int32_t>& src, size_t count, rust::Vec<int32_t>& dest) {
+    std::vector<int32_t> cpp_src(src.begin(), src.end());
+    std::vector<int32_t> cpp_dest(count);
+
+    hpx::copy_n(hpx::execution::par, cpp_src.begin(), count, cpp_dest.begin());
+
+    dest.clear();
+    dest.reserve(cpp_dest.size());
+    for (const auto& item : cpp_dest) {
+        dest.push_back(item);
+    }
+}

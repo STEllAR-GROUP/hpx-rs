@@ -21,6 +21,7 @@ pub mod ffi {
         fn disconnect_with_timeout(shutdown_timeout: f64, localwait: f64) -> i32;
         //fn stop() -> i32;
         fn hpx_copy(src: &Vec<i32>, dest: &mut Vec<i32>);
+        fn hpx_copy_n(src: &Vec<i32>, count: usize, dest: &mut Vec<i32>);
     }
 }
 
@@ -55,6 +56,11 @@ mod tests {
         dest
     }
 
+    pub fn copy_n(src: &[i32], count: usize) -> Vec<i32> {
+        let mut dest = Vec::with_capacity(count);
+        ffi::hpx_copy_n(&src.to_vec(), count, &mut dest);
+        dest
+    }
     //#[test]
     //fn test_init_finalize() {
     //    let (argc, mut argv) = create_c_args(&["testing", "arg1", "arg2"]);
@@ -105,6 +111,24 @@ mod tests {
 
         unsafe {
             let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_copy_n() {
+        let (argc, mut argv) = create_c_args(&["test_copy_n"]);
+
+        let test_func = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let src = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            let result = copy_n(&src, 5);
+            assert_eq!(result, vec![1, 2, 3, 4, 5]);
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(test_func, argc, argv.as_mut_ptr());
             assert_eq!(result, 0);
         }
     }
