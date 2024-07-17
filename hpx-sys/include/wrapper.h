@@ -1,6 +1,7 @@
 #pragma once
 
 #include <hpx/hpx_init.hpp>
+#include <hpx/algorithm.hpp>
 #include <iostream>
 #include <cstdint>
 #include <vector>
@@ -45,3 +46,17 @@ inline std::int32_t disconnect_with_timeout(double shutdown_timeout, double loca
 inline std::int32_t finalize() { return hpx::finalize(); }
 
 /*inline std::int32_t stop() { return hpx::stop(); }*/
+
+
+inline void hpx_copy(const rust::Vec<int32_t>& src, rust::Vec<int32_t>& dest) {
+    std::vector<int32_t> cpp_src(src.begin(), src.end());
+    std::vector<int32_t> cpp_dest(dest.size());
+
+    hpx::copy(hpx::execution::par, cpp_src.begin(), cpp_src.end(), cpp_dest.begin());
+
+    dest.clear();
+    dest.reserve(cpp_dest.size());
+    for (const auto& item : cpp_dest) {
+        dest.push_back(item);
+    }
+}
