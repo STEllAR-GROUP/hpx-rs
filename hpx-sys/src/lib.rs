@@ -22,6 +22,7 @@ pub mod ffi {
         //fn stop() -> i32;
         fn hpx_copy(src: &Vec<i32>, dest: &mut Vec<i32>);
         fn hpx_copy_n(src: &Vec<i32>, count: usize, dest: &mut Vec<i32>);
+        fn hpx_copy_if(src: &Vec<i32>, dest: &mut Vec<i32>, pred: fn(i32) -> bool);
     }
 }
 
@@ -56,9 +57,15 @@ mod tests {
         dest
     }
 
-    pub fn copy_n(src: &[i32], count: usize) -> Vec<i32> {
+    fn copy_n(src: &[i32], count: usize) -> Vec<i32> {
         let mut dest = Vec::with_capacity(count);
         ffi::hpx_copy_n(&src.to_vec(), count, &mut dest);
+        dest
+    }
+
+    fn copy_if_positive(src: &Vec<i32>) -> Vec<i32> {
+        let mut dest = Vec::new();
+        ffi::hpx_copy_if(src, &mut dest, |x| x % 3 == 0);
         dest
     }
     //#[test]
@@ -96,7 +103,6 @@ mod tests {
         }
     }
 
-    // to test hpx::copy with an arbitirage range
     #[test]
     #[serial]
     fn test_hpx_copy_range() {
@@ -129,6 +135,24 @@ mod tests {
 
         unsafe {
             let result = ffi::init(test_func, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_hpx_copy_if() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_copy_if"]);
+
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let src = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+            let result = copy_if_positive(&src);
+            assert_eq!(result, vec![0, 3, 6, 9, 12]);
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
             assert_eq!(result, 0);
         }
     }
