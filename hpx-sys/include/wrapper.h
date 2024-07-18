@@ -8,17 +8,6 @@
 
 #include "rust/cxx.h"
 
-
-/*inline std::int32_t start() { return hpx::start(nullptr, 0, nullptr); }*/
-
-/*inline std::int32_t start(rust::Fn<int(int, char **)> rust_fn, int argc, char **argv) {*/
-/*	return hpx::start(*/
-/*		[&](int argc, char **argv) {*/
-/*		return rust_fn(argc, argv);*/
-/*        },*/
-/*        argc, argv);*/
-/*}*/
-
 inline std::int32_t init(rust::Fn<int(int, char **)> rust_fn, int argc, char **argv) {
 	return hpx::init(
 		[&](int argc, char **argv) {
@@ -44,9 +33,6 @@ inline std::int32_t disconnect_with_timeout(double shutdown_timeout, double loca
 }
 
 inline std::int32_t finalize() { return hpx::finalize(); }
-
-/*inline std::int32_t stop() { return hpx::stop(); }*/
-
 
 inline void hpx_copy(const rust::Vec<int32_t>& src, rust::Vec<int32_t>& dest) {
     std::vector<int32_t> cpp_src(src.begin(), src.end());
@@ -91,4 +77,20 @@ inline void hpx_copy_if(const rust::Vec<int32_t>& src, rust::Vec<int32_t>& dest,
     for (const auto& item : cpp_dest) {
         dest.push_back(item);
     }
+}
+
+inline std::int64_t hpx_count(const rust::Vec<int32_t>& vec, int32_t value) {
+    return hpx::count(hpx::execution::par, vec.begin(), vec.end(), value);
+}
+
+
+inline int64_t hpx_count_if(const rust::Vec<int32_t>& vec, rust::Fn<bool(int32_t)> pred) {
+    std::vector<int32_t> cpp_vec(vec.begin(), vec.end());
+    
+    auto result = hpx::count_if(hpx::execution::par,
+                                cpp_vec.begin(),
+                                cpp_vec.end(),
+                                [&](int32_t value) { return pred(value); });
+    
+    return static_cast<int64_t>(result);
 }

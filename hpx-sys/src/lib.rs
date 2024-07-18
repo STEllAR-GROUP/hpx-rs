@@ -7,7 +7,6 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("hpx-sys/include/wrapper.h");
 
-        //fn start() -> i32;
         unsafe fn init(
             func: unsafe fn(i32, *mut *mut c_char) -> i32,
             argc: i32,
@@ -19,10 +18,11 @@ pub mod ffi {
         fn terminate();
         fn disconnect() -> i32;
         fn disconnect_with_timeout(shutdown_timeout: f64, localwait: f64) -> i32;
-        //fn stop() -> i32;
         fn hpx_copy(src: &Vec<i32>, dest: &mut Vec<i32>);
         fn hpx_copy_n(src: &Vec<i32>, count: usize, dest: &mut Vec<i32>);
         fn hpx_copy_if(src: &Vec<i32>, dest: &mut Vec<i32>, pred: fn(i32) -> bool);
+        fn hpx_count(vec: &Vec<i32>, value: i32) -> i64;
+        fn hpx_count_if(vec: &Vec<i32>, pred: fn(i32) -> bool) -> i64;
     }
 }
 
@@ -68,22 +68,28 @@ mod tests {
         ffi::hpx_copy_if(src, &mut dest, |x| x % 3 == 0);
         dest
     }
-    //#[test]
-    //fn test_init_finalize() {
-    //    let (argc, mut argv) = create_c_args(&["testing", "arg1", "arg2"]);
-    //
-    //    let dummy_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
-    //        println!("Dummy fn called");
-    //        // to exit hpx::init you are required to shutdown hpx runtime
-    //        ffi::finalize();
-    //        0
-    //    };
-    //
-    //    unsafe {
-    //        let result = ffi::init(dummy_main, argc, argv.as_mut_ptr());
-    //        assert_eq!(result, 0);
-    //    }
-    //}
+
+    fn count(vec: &Vec<i32>, value: i32) -> i64 {
+        ffi::hpx_count(vec, value)
+    }
+
+    #[test]
+    #[serial]
+    fn test_init_finalize() {
+        let (argc, mut argv) = create_c_args(&["testing", "arg1", "arg2"]);
+
+        let dummy_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            println!("Dummy fn called");
+            // to exit hpx::init you are required to shutdown hpx runtime
+            ffi::finalize();
+            0
+        };
+
+        unsafe {
+            let result = ffi::init(dummy_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
 
     #[test]
     #[serial]
@@ -148,6 +154,56 @@ mod tests {
             let src = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
             let result = copy_if_positive(&src);
             assert_eq!(result, vec![0, 3, 6, 9, 12]);
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_hpx_count() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_count"]);
+
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let vec = vec![1, 2, 3, 2, 4, 2, 5, 2];
+            let result = count(&vec, 2);
+            assert_eq!(result, 4);
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_hpx_count_if() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_count_if"]);
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let vec = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            let result_even = ffi::hpx_count_if(&vec, |x| x % 2 == 0);
+            assert_eq!(result_even, 5);
+            let result_greater_than_5 = ffi::hpx_count_if(&vec, |x| x > 5);
+            assert_eq!(result_greater_than_5, 5);
+            let is_prime = |n: i32| {
+                if n <= 1 {
+                    return false;
+                }
+                for i in 2..=(n as f64).sqrt() as i32 {
+                    if n % i == 0 {
+                        return false;
+                    }
+                }
+                true
+            };
+            let result_prime = ffi::hpx_count_if(&vec, is_prime);
+            assert_eq!(result_prime, 4);
             ffi::finalize()
         };
 
