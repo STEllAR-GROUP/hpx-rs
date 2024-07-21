@@ -94,3 +94,11 @@ inline int64_t hpx_count_if(const rust::Vec<int32_t>& vec, rust::Fn<bool(int32_t
     
     return static_cast<int64_t>(result);
 }
+
+inline bool hpx_ends_with(rust::Slice<const int32_t> src, 
+                          rust::Slice<const int32_t> dest) {
+    return hpx::ends_with(hpx::execution::par,
+                          src.begin(), src.end(),
+                          dest.begin(), dest.end(),
+                          std::equal_to<int32_t>());
+}

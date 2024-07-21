@@ -23,6 +23,7 @@ pub mod ffi {
         fn hpx_copy_if(src: &Vec<i32>, dest: &mut Vec<i32>, pred: fn(i32) -> bool);
         fn hpx_count(vec: &Vec<i32>, value: i32) -> i64;
         fn hpx_count_if(vec: &Vec<i32>, pred: fn(i32) -> bool) -> i64;
+        fn hpx_ends_with(src: &[i32], dest: &[i32]) -> bool;
     }
 }
 
@@ -212,5 +213,41 @@ mod tests {
             assert_eq!(result, 0);
         }
     }
-    //
+
+    #[test]
+    #[serial]
+    fn test_hpx_ends_with() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_ends_with"]);
+
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let vec1 = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            let vec2 = vec![8, 9, 10];
+            let vec3 = vec![7, 8, 9];
+            let vec4 = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            let vec5: Vec<i32> = vec![];
+
+            // checking with complete vectors
+            assert!(ffi::hpx_ends_with(&vec1, &vec2));
+            assert!(!ffi::hpx_ends_with(&vec1, &vec3));
+            assert!(ffi::hpx_ends_with(&vec1, &vec4));
+            assert!(ffi::hpx_ends_with(&vec1, &vec5));
+            assert!(ffi::hpx_ends_with(&vec5, &vec5));
+
+            // checking for vector slices
+            assert!(ffi::hpx_ends_with(&vec1[5..], &vec2));
+            assert!(ffi::hpx_ends_with(&vec1[..], &vec1[8..]));
+            assert!(!ffi::hpx_ends_with(&vec1[..5], &vec2));
+            assert!(ffi::hpx_ends_with(&vec1[..5], &vec1[3..5]));
+
+            assert!(ffi::hpx_ends_with(&vec1, &[]));
+            assert!(ffi::hpx_ends_with(&[], &[]));
+
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
 }
