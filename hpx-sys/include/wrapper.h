@@ -102,3 +102,11 @@ inline bool hpx_ends_with(rust::Slice<const int32_t> src,
                           dest.begin(), dest.end(),
                           std::equal_to<int32_t>());
 }
+
+inline bool hpx_equal(rust::Slice<const int32_t> src, rust::Slice<const int32_t> dest) {
+    return hpx::equal(
+        hpx::execution::par,
+        src.begin(), src.end(),
+        dest.begin(), dest.end()
+    );
+}
