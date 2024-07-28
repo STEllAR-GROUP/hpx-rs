@@ -25,6 +25,9 @@ pub mod ffi {
         fn hpx_count_if(vec: &Vec<i32>, pred: fn(i32) -> bool) -> i64;
         fn hpx_ends_with(src: &[i32], dest: &[i32]) -> bool;
         fn hpx_equal(slice1: &[i32], slice2: &[i32]) -> bool;
+
+        // will only work for 1D vectors
+        fn hpx_fill(src: &mut Vec<i32>, value: i32);
     }
 }
 
@@ -277,6 +280,29 @@ mod tests {
 
             assert!(ffi::hpx_equal(&v1, &v5[1..6]));
             assert!(!ffi::hpx_equal(&v1[..4], &v3));
+
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_hpx_fill() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_fill"]);
+
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let mut v = vec![0; 10];
+            ffi::hpx_fill(&mut v, 42);
+            assert!(v.iter().all(|&x| x == 42));
+
+            let mut v2 = vec![0; 1_000_000]; // testing on a long vector
+            ffi::hpx_fill(&mut v2, 7);
+            assert!(v2.iter().all(|&x| x == 7));
 
             ffi::finalize()
         };

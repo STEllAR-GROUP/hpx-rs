@@ -110,3 +110,15 @@ inline bool hpx_equal(rust::Slice<const int32_t> src, rust::Slice<const int32_t>
         dest.begin(), dest.end()
     );
 }
+
+inline void hpx_fill(rust::Vec<int32_t>& src, int32_t value) {
+    std::vector<int32_t> cpp_vec(src.begin(), src.end());
+    
+    hpx::fill(hpx::execution::par, cpp_vec.begin(), cpp_vec.end(), value);
+    
+    src.clear();
+    src.reserve(cpp_vec.size());
+    for (const auto& item : cpp_vec) {
+        src.push_back(item);
+    }
+}
