@@ -21,13 +21,12 @@ pub mod ffi {
         fn hpx_copy(src: &Vec<i32>, dest: &mut Vec<i32>);
         fn hpx_copy_n(src: &Vec<i32>, count: usize, dest: &mut Vec<i32>);
         fn hpx_copy_if(src: &Vec<i32>, dest: &mut Vec<i32>, pred: fn(i32) -> bool);
-        fn hpx_count(vec: &Vec<i32>, value: i32) -> i64;
-        fn hpx_count_if(vec: &Vec<i32>, pred: fn(i32) -> bool) -> i64;
+        fn hpx_count(src: &Vec<i32>, value: i32) -> i64;
+        fn hpx_count_if(src: &Vec<i32>, pred: fn(i32) -> bool) -> i64;
         fn hpx_ends_with(src: &[i32], dest: &[i32]) -> bool;
         fn hpx_equal(slice1: &[i32], slice2: &[i32]) -> bool;
-
-        // will only work for 1D vectors
-        fn hpx_fill(src: &mut Vec<i32>, value: i32);
+        fn hpx_fill(src: &mut Vec<i32>, value: i32); // will only work for linear vectors
+        fn hpx_find(src: &Vec<i32>, value: i32) -> i64;
     }
 }
 
@@ -76,6 +75,13 @@ mod tests {
 
     fn count(vec: &Vec<i32>, value: i32) -> i64 {
         ffi::hpx_count(vec, value)
+    }
+
+    fn find(vec: &Vec<i32>, value: i32) -> Option<usize> {
+        match ffi::hpx_find(vec, value) {
+            -1 => None,
+            index => Some(index as usize),
+        }
     }
 
     #[test]
@@ -303,6 +309,35 @@ mod tests {
             let mut v2 = vec![0; 1_000_000]; // testing on a long vector
             ffi::hpx_fill(&mut v2, 7);
             assert!(v2.iter().all(|&x| x == 7));
+
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_hpx_find() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_find"]);
+
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+            let result = find(&v, 5); // finding existing value
+            assert_eq!(result, Some(4));
+
+            let result = find(&v, 11); // finding non-existing value
+            assert_eq!(result, None);
+
+            let result = find(&v, 1);
+            assert_eq!(result, Some(0));
+
+            let result = find(&v, 10);
+            assert_eq!(result, Some(9));
 
             ffi::finalize()
         };

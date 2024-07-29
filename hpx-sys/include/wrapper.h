@@ -122,3 +122,17 @@ inline void hpx_fill(rust::Vec<int32_t>& src, int32_t value) {
         src.push_back(item);
     }
 }
+
+inline int64_t hpx_find(const rust::Vec<int32_t>& src, int32_t value) {
+    std::vector<int32_t> cpp_vec(src.begin(), src.end());
+    
+    auto result = hpx::find(hpx::execution::par,
+                            cpp_vec.begin(),
+                            cpp_vec.end(),
+                            value);
+    
+    if (result != cpp_vec.end()) {
+        return static_cast<int64_t>(std::distance(cpp_vec.begin(), result));
+    }
+    return -1;
+}
