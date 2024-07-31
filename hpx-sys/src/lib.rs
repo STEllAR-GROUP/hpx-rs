@@ -28,6 +28,7 @@ pub mod ffi {
         fn hpx_fill(src: &mut Vec<i32>, value: i32); // will only work for linear vectors
         fn hpx_find(src: &Vec<i32>, value: i32) -> i64;
         fn hpx_sort(src: &mut Vec<i32>);
+        fn hpx_sort_comp(src: &mut Vec<i32>, comp: fn(i32, i32) -> bool);
     }
 }
 
@@ -358,6 +359,39 @@ mod tests {
             let mut src = vec![5, 2, 8, 1, 9, 3, 7, 6, 4];
             ffi::hpx_sort(&mut src);
             assert_eq!(src, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_hpx_sort_comp() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_sort_comp"]);
+
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let mut v = vec![5, 2, 8, 1, 9, 3, 7, 6, 4];
+            ffi::hpx_sort_comp(&mut v, |a, b| a > b); // sorting in descending order
+            assert_eq!(v, vec![9, 8, 7, 6, 5, 4, 3, 2, 1]);
+
+            // sorting even numbers before odd numbers
+            let mut v2 = vec![5, 2, 8, 1, 9, 3, 7, 6, 4];
+            ffi::hpx_sort_comp(
+                &mut v2,
+                |a, b| {
+                    if a % 2 == b % 2 {
+                        a < b
+                    } else {
+                        a % 2 == 0
+                    }
+                },
+            );
+            assert_eq!(v2, vec![2, 4, 6, 8, 1, 3, 5, 7, 9]);
+
             ffi::finalize()
         };
 

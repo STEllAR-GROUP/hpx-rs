@@ -148,3 +148,16 @@ inline void hpx_sort(rust::Vec<int32_t>& src) {
         src.push_back(item);
     }
 }
+
+inline void hpx_sort_comp(rust::Vec<int32_t>& src, rust::Fn<bool(int32_t, int32_t)> comp) {
+    std::vector<int32_t> cpp_vec(src.begin(), src.end());
+    
+    hpx::sort(hpx::execution::par, cpp_vec.begin(), cpp_vec.end(),
+        [&](int32_t a, int32_t b) { return comp(a, b); });
+    
+    src.clear();
+    src.reserve(cpp_vec.size());
+    for (const auto& item : cpp_vec) {
+        src.push_back(item);
+    }
+}
