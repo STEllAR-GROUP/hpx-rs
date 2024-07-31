@@ -29,6 +29,7 @@ pub mod ffi {
         fn hpx_find(src: &Vec<i32>, value: i32) -> i64;
         fn hpx_sort(src: &mut Vec<i32>);
         fn hpx_sort_comp(src: &mut Vec<i32>, comp: fn(i32, i32) -> bool);
+        fn hpx_merge(src1: &Vec<i32>, src2: &Vec<i32>, dest: &mut Vec<i32>);
     }
 }
 
@@ -392,6 +393,26 @@ mod tests {
             );
             assert_eq!(v2, vec![2, 4, 6, 8, 1, 3, 5, 7, 9]);
 
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_hpx_merge() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_merge"]);
+
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let v1 = vec![1, 3, 5, 7, 9, 20, 100];
+            let v2 = vec![2, 4, 6, 8, 10, 97];
+            let mut dest = Vec::new();
+            ffi::hpx_merge(&v1, &v2, &mut dest);
+            assert_eq!(dest, vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 97, 100]);
             ffi::finalize()
         };
 

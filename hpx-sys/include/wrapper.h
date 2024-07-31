@@ -161,3 +161,22 @@ inline void hpx_sort_comp(rust::Vec<int32_t>& src, rust::Fn<bool(int32_t, int32_
         src.push_back(item);
     }
 }
+
+inline void hpx_merge(const rust::Vec<int32_t>& src1, 
+                               const rust::Vec<int32_t>& src2, 
+                               rust::Vec<int32_t>& dest) {
+    std::vector<int32_t> cpp_src1(src1.begin(), src1.end());
+    std::vector<int32_t> cpp_src2(src2.begin(), src2.end());
+    std::vector<int32_t> cpp_dest(cpp_src1.size() + cpp_src2.size());
+
+    hpx::merge(hpx::execution::par,
+               cpp_src1.begin(), cpp_src1.end(),
+               cpp_src2.begin(), cpp_src2.end(),
+               cpp_dest.begin());
+
+    dest.clear();
+    dest.reserve(cpp_dest.size());
+    for (const auto& item : cpp_dest) {
+        dest.push_back(item);
+    }
+}
