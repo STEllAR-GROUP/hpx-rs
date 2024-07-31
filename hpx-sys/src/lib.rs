@@ -27,6 +27,7 @@ pub mod ffi {
         fn hpx_equal(slice1: &[i32], slice2: &[i32]) -> bool;
         fn hpx_fill(src: &mut Vec<i32>, value: i32); // will only work for linear vectors
         fn hpx_find(src: &Vec<i32>, value: i32) -> i64;
+        fn hpx_sort(src: &mut Vec<i32>);
     }
 }
 
@@ -339,6 +340,24 @@ mod tests {
             let result = find(&v, 10);
             assert_eq!(result, Some(9));
 
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_hpx_sort() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_sort"]);
+
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let mut src = vec![5, 2, 8, 1, 9, 3, 7, 6, 4];
+            ffi::hpx_sort(&mut src);
+            assert_eq!(src, vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
             ffi::finalize()
         };
 

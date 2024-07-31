@@ -136,3 +136,15 @@ inline int64_t hpx_find(const rust::Vec<int32_t>& src, int32_t value) {
     }
     return -1;
 }
+
+inline void hpx_sort(rust::Vec<int32_t>& src) {
+    std::vector<int32_t> cpp_vec(src.begin(), src.end());
+    
+    hpx::sort(hpx::execution::par, cpp_vec.begin(), cpp_vec.end());
+    
+    src.clear();
+    src.reserve(cpp_vec.size());
+    for (const auto& item : cpp_vec) {
+        src.push_back(item);
+    }
+}
