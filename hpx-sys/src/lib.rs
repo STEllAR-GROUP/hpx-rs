@@ -30,6 +30,8 @@ pub mod ffi {
         fn hpx_sort(src: &mut Vec<i32>);
         fn hpx_sort_comp(src: &mut Vec<i32>, comp: fn(i32, i32) -> bool);
         fn hpx_merge(src1: &Vec<i32>, src2: &Vec<i32>, dest: &mut Vec<i32>);
+        fn hpx_partial_sort(src: &mut Vec<i32>, last: usize);
+        fn hpx_partial_sort_comp(src: &mut Vec<i32>, last: usize, comp: fn(i32, i32) -> bool);
     }
 }
 
@@ -413,6 +415,66 @@ mod tests {
             let mut dest = Vec::new();
             ffi::hpx_merge(&v1, &v2, &mut dest);
             assert_eq!(dest, vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 97, 100]);
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_hpx_partial_sort() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_partial_sort"]);
+
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let mut vec = vec![5, 2, 8, 1, 9, 3, 7, 6, 4];
+            let last = 4;
+            println!("Before partial sort: {:?}", vec);
+
+            ffi::hpx_partial_sort(&mut vec, last);
+            println!("After partial sort: {:?}", vec);
+
+            // If first -> last elements are sorted
+            assert!(vec[..last].windows(2).all(|w| w[0] <= w[1]));
+
+            // If ele of sorted part <=  ele of unsorted part
+            assert!(vec[..last]
+                .iter()
+                .all(|&x| vec[last..].iter().all(|&y| x <= y)));
+
+            ffi::finalize()
+        };
+
+        unsafe {
+            let result = ffi::init(hpx_main, argc, argv.as_mut_ptr());
+            assert_eq!(result, 0);
+        }
+    }
+
+    #[test]
+    #[serial]
+    fn test_hpx_partial_sort_comp() {
+        let (argc, mut argv) = create_c_args(&["test_hpx_partial_sort_comp"]);
+
+        let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
+            let mut vec = vec![5, 2, 8, 1, 9, 3, 7, 6, 4];
+            let last = 4;
+            println!("Before partial sort: {:?}", vec);
+
+            ffi::hpx_partial_sort_comp(&mut vec, last, |a, b| b < a);
+            println!("After partial sort: {:?}", vec);
+
+            // If first -> last elements are sorted dec
+            assert!(vec[..last].windows(2).all(|w| w[0] >= w[1]));
+
+            // If ele of sorted part >= ele of unsorted part
+            assert!(vec[..last]
+                .iter()
+                .all(|&x| vec[last..].iter().all(|&y| x >= y)));
+
             ffi::finalize()
         };
 
