@@ -36,58 +36,66 @@ pub mod ffi {
 }
 
 // ================================================================================================
+// Wrapper for the above Bindings.
+// reffer to tests to understand how to use them. [NOTE: Not all bindings have wrapper.]
+// ================================================================================================
+use std::ffi::CString;
+use std::os::raw::c_char;
+
+pub fn create_c_args(args: &[&str]) -> (i32, Vec<*mut c_char>) {
+    let c_args: Vec<CString> = args.iter().map(|s| CString::new(*s).unwrap()).collect();
+    let ptrs: Vec<*mut c_char> = c_args.iter().map(|s| s.as_ptr() as *mut c_char).collect();
+    (ptrs.len() as i32, ptrs)
+}
+
+pub fn copy_vector(src: &Vec<i32>) -> Vec<i32> {
+    let mut dest = vec![0; src.len()];
+    ffi::hpx_copy(src, &mut dest);
+    dest
+}
+
+pub fn copy_vector_range(src: &Vec<i32>, start: usize, end: usize) -> Vec<i32> {
+    let slice = &src[start..end];
+    let mut dest = vec![0; slice.len()];
+    ffi::hpx_copy(&slice.to_vec(), &mut dest);
+    dest
+}
+
+pub fn copy_n(src: &[i32], count: usize) -> Vec<i32> {
+    let mut dest = Vec::with_capacity(count);
+    ffi::hpx_copy_n(&src.to_vec(), count, &mut dest);
+    dest
+}
+
+pub fn copy_if_positive(src: &Vec<i32>) -> Vec<i32> {
+    let mut dest = Vec::new();
+    ffi::hpx_copy_if(src, &mut dest, |x| x % 3 == 0);
+    dest
+}
+
+pub fn count(vec: &Vec<i32>, value: i32) -> i64 {
+    ffi::hpx_count(vec, value)
+}
+
+pub fn find(vec: &Vec<i32>, value: i32) -> Option<usize> {
+    match ffi::hpx_find(vec, value) {
+        -1 => None,
+        index => Some(index as usize),
+    }
+}
+
+// ================================================================================================
 // Tests (to be shifted to systests crate within hpx-rs workspace)
 // ================================================================================================
 #[cfg(test)]
 mod tests {
     use super::ffi;
+    use crate::{
+        copy_if_positive, copy_n, copy_vector, copy_vector_range, count, create_c_args, find,
+    };
     use serial_test::serial;
     use std::ffi::CString;
     use std::os::raw::c_char;
-    use std::thread;
-    use std::time::Duration;
-
-    fn create_c_args(args: &[&str]) -> (i32, Vec<*mut c_char>) {
-        let c_args: Vec<CString> = args.iter().map(|s| CString::new(*s).unwrap()).collect();
-        let ptrs: Vec<*mut c_char> = c_args.iter().map(|s| s.as_ptr() as *mut c_char).collect();
-        (ptrs.len() as i32, ptrs)
-    }
-
-    fn copy_vector(src: &Vec<i32>) -> Vec<i32> {
-        let mut dest = vec![0; src.len()];
-        ffi::hpx_copy(src, &mut dest);
-        dest
-    }
-
-    fn copy_vector_range(src: &Vec<i32>, start: usize, end: usize) -> Vec<i32> {
-        let slice = &src[start..end];
-        let mut dest = vec![0; slice.len()];
-        ffi::hpx_copy(&slice.to_vec(), &mut dest);
-        dest
-    }
-
-    fn copy_n(src: &[i32], count: usize) -> Vec<i32> {
-        let mut dest = Vec::with_capacity(count);
-        ffi::hpx_copy_n(&src.to_vec(), count, &mut dest);
-        dest
-    }
-
-    fn copy_if_positive(src: &Vec<i32>) -> Vec<i32> {
-        let mut dest = Vec::new();
-        ffi::hpx_copy_if(src, &mut dest, |x| x % 3 == 0);
-        dest
-    }
-
-    fn count(vec: &Vec<i32>, value: i32) -> i64 {
-        ffi::hpx_count(vec, value)
-    }
-
-    fn find(vec: &Vec<i32>, value: i32) -> Option<usize> {
-        match ffi::hpx_find(vec, value) {
-            -1 => None,
-            index => Some(index as usize),
-        }
-    }
 
     #[test]
     #[serial]
