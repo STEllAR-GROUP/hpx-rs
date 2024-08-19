@@ -34,17 +34,8 @@ inline std::int32_t disconnect_with_timeout(double shutdown_timeout, double loca
 
 inline std::int32_t finalize() { return hpx::finalize(); }
 
-inline void hpx_copy(const rust::Vec<int32_t>& src, rust::Vec<int32_t>& dest) {
-    std::vector<int32_t> cpp_src(src.begin(), src.end());
-    std::vector<int32_t> cpp_dest(dest.size());
-
-    hpx::copy(hpx::execution::par, cpp_src.begin(), cpp_src.end(), cpp_dest.begin());
-
-    dest.clear();
-    dest.reserve(cpp_dest.size());
-    for (const auto& item : cpp_dest) {
-        dest.push_back(item);
-    }
+inline void hpx_copy(rust::Slice<const int32_t> src, rust::Slice<int32_t> dest) {
+    hpx::copy(hpx::execution::par, src.begin(), src.end(), dest.begin());
 }
 
 inline void hpx_copy_n(const rust::Vec<int32_t>& src, size_t count, rust::Vec<int32_t>& dest) {
@@ -137,16 +128,8 @@ inline int64_t hpx_find(const rust::Vec<int32_t>& src, int32_t value) {
     return -1;
 }
 
-inline void hpx_sort(rust::Vec<int32_t>& src) {
-    std::vector<int32_t> cpp_vec(src.begin(), src.end());
-    
-    hpx::sort(hpx::execution::par, cpp_vec.begin(), cpp_vec.end());
-    
-    src.clear();
-    src.reserve(cpp_vec.size());
-    for (const auto& item : cpp_vec) {
-        src.push_back(item);
-    }
+inline void hpx_sort(rust::Slice<int32_t> src) {
+    hpx::sort(hpx::execution::par, src.begin(), src.end());
 }
 
 inline void hpx_sort_comp(rust::Vec<int32_t>& src, rust::Fn<bool(int32_t, int32_t)> comp) {

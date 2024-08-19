@@ -18,7 +18,7 @@ pub mod ffi {
         fn terminate();
         fn disconnect() -> i32;
         fn disconnect_with_timeout(shutdown_timeout: f64, localwait: f64) -> i32;
-        fn hpx_copy(src: &Vec<i32>, dest: &mut Vec<i32>);
+        fn hpx_copy(src: &[i32], dest: &mut [i32]);
         fn hpx_copy_n(src: &Vec<i32>, count: usize, dest: &mut Vec<i32>);
         fn hpx_copy_if(src: &Vec<i32>, dest: &mut Vec<i32>, pred: fn(i32) -> bool);
         fn hpx_count(src: &Vec<i32>, value: i32) -> i64;
@@ -27,7 +27,7 @@ pub mod ffi {
         fn hpx_equal(slice1: &[i32], slice2: &[i32]) -> bool;
         fn hpx_fill(src: &mut Vec<i32>, value: i32); // will only work for linear vectors
         fn hpx_find(src: &Vec<i32>, value: i32) -> i64;
-        fn hpx_sort(src: &mut Vec<i32>);
+        fn hpx_sort(src: &mut [i32]);
         fn hpx_sort_comp(src: &mut Vec<i32>, comp: fn(i32, i32) -> bool);
         fn hpx_merge(src1: &Vec<i32>, src2: &Vec<i32>, dest: &mut Vec<i32>);
         fn hpx_partial_sort(src: &mut Vec<i32>, last: usize);
@@ -48,16 +48,9 @@ pub fn create_c_args(args: &[&str]) -> (i32, Vec<*mut c_char>) {
     (ptrs.len() as i32, ptrs)
 }
 
-pub fn copy_vector(src: &Vec<i32>) -> Vec<i32> {
+pub fn copy_vector(src: &[i32]) -> Vec<i32> {
     let mut dest = vec![0; src.len()];
     ffi::hpx_copy(src, &mut dest);
-    dest
-}
-
-pub fn copy_vector_range(src: &Vec<i32>, start: usize, end: usize) -> Vec<i32> {
-    let slice = &src[start..end];
-    let mut dest = vec![0; slice.len()];
-    ffi::hpx_copy(&slice.to_vec(), &mut dest);
     dest
 }
 
@@ -90,9 +83,7 @@ pub fn find(vec: &Vec<i32>, value: i32) -> Option<usize> {
 #[cfg(test)]
 mod tests {
     use super::ffi;
-    use crate::{
-        copy_if_positive, copy_n, copy_vector, copy_vector_range, count, create_c_args, find,
-    };
+    use crate::{copy_if_positive, copy_n, copy_vector, count, create_c_args, find};
     use serial_test::serial;
     use std::ffi::CString;
     use std::os::raw::c_char;
@@ -140,7 +131,7 @@ mod tests {
 
         let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
             let src = vec![1, 2, 3, 4, 5];
-            let result = copy_vector_range(&src, 0, 3);
+            let result = copy_vector(&src[0..3]);
             assert_eq!(&src[0..3], &result);
             ffi::finalize()
         };
