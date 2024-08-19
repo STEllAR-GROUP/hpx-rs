@@ -19,7 +19,7 @@ pub mod ffi {
         fn disconnect() -> i32;
         fn disconnect_with_timeout(shutdown_timeout: f64, localwait: f64) -> i32;
         fn hpx_copy(src: &[i32], dest: &mut [i32]);
-        fn hpx_copy_n(src: &Vec<i32>, count: usize, dest: &mut Vec<i32>);
+        fn hpx_copy_n(src: &[i32], count: usize, dest: &mut [i32]);
         fn hpx_copy_if(src: &Vec<i32>, dest: &mut Vec<i32>, pred: fn(i32) -> bool);
         fn hpx_count(src: &Vec<i32>, value: i32) -> i64;
         fn hpx_count_if(src: &Vec<i32>, pred: fn(i32) -> bool) -> i64;
@@ -54,10 +54,13 @@ pub fn copy_vector(src: &[i32]) -> Vec<i32> {
     dest
 }
 
-pub fn copy_n(src: &[i32], count: usize) -> Vec<i32> {
-    let mut dest = Vec::with_capacity(count);
-    ffi::hpx_copy_n(&src.to_vec(), count, &mut dest);
-    dest
+pub fn copy_n(src: &[i32], count: usize) -> Result<Vec<i32>, &'static str> {
+    if count > src.len() {
+        return Err("count larger than source slice length");
+    }
+    let mut dest = vec![0; count];
+    ffi::hpx_copy_n(src, count, &mut dest);
+    Ok(dest)
 }
 
 pub fn copy_if_positive(src: &Vec<i32>) -> Vec<i32> {
@@ -149,8 +152,16 @@ mod tests {
 
         let test_func = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
             let src = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-            let result = copy_n(&src, 5);
-            assert_eq!(result, vec![1, 2, 3, 4, 5]);
+            match copy_n(&src, 5) {
+                Ok(result) => assert_eq!(result, vec![1, 2, 3, 4, 5]),
+                Err(e) => panic!("Unexpected error: {}", e),
+            }
+
+            match copy_n(&src, 15) {
+                // expecting error
+                Ok(_) => panic!("Expected error, but got Ok"),
+                Err(e) => assert_eq!(e, "count larger than source slice length"),
+            }
             ffi::finalize()
         };
 
