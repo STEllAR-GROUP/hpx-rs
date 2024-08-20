@@ -63,7 +63,7 @@ pub fn copy_n(src: &[i32], count: usize) -> Result<Vec<i32>, &'static str> {
     Ok(dest)
 }
 
-pub fn copy_if_positive(src: &Vec<i32>) -> Vec<i32> {
+pub fn copy_if_divisiblileityby3(src: &Vec<i32>) -> Vec<i32> {
     let mut dest = Vec::new();
     ffi::hpx_copy_if(src, &mut dest, |x| x % 3 == 0);
     dest
@@ -92,7 +92,7 @@ pub fn merge(src1: &[i32], src2: &[i32]) -> Vec<i32> {
 #[cfg(test)]
 mod tests {
     use super::ffi;
-    use crate::{copy_if_positive, copy_n, copy_vector, count, create_c_args, find};
+    use crate::{copy_if_divisiblileityby3, copy_n, copy_vector, count, create_c_args, find};
     use serial_test::serial;
     use std::ffi::CString;
     use std::os::raw::c_char;
@@ -184,7 +184,7 @@ mod tests {
 
         let hpx_main = |_argc: i32, _argv: *mut *mut c_char| -> i32 {
             let src = vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-            let result = copy_if_positive(&src);
+            let result = copy_if_divisiblileityby3(&src);
             assert_eq!(result, vec![0, 3, 6, 9, 12]);
             ffi::finalize()
         };
