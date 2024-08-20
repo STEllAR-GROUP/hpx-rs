@@ -44,11 +44,10 @@ inline void hpx_copy_n(rust::Slice<const int32_t> src, size_t count, rust::Slice
 
 inline void hpx_copy_if(const rust::Vec<int32_t>& src, rust::Vec<int32_t>& dest, 
                         rust::Fn<bool(int32_t)> pred) {
-    std::vector<int32_t> cpp_src(src.begin(), src.end());
-    std::vector<int32_t> cpp_dest(cpp_src.size()); 
+    std::vector<int32_t> cpp_dest(src.size());
 
     auto result = hpx::copy_if(hpx::execution::par, 
-                 cpp_src.begin(), cpp_src.end(), 
+                 src.begin(), src.end(), 
                  cpp_dest.begin(),
                  [&](int32_t value) { return pred(value); });
 
