@@ -25,8 +25,8 @@ pub mod ffi {
         fn hpx_count_if(src: &Vec<i32>, pred: fn(i32) -> bool) -> i64;
         fn hpx_ends_with(src: &[i32], dest: &[i32]) -> bool;
         fn hpx_equal(slice1: &[i32], slice2: &[i32]) -> bool;
-        fn hpx_fill(src: &mut Vec<i32>, value: i32); // will only work for linear vectors
-        fn hpx_find(src: &Vec<i32>, value: i32) -> i64;
+        fn hpx_fill(src: &mut [i32], value: i32); // will only work for linear vectors
+        fn hpx_find(src: &[i32], value: i32) -> i64;
         fn hpx_sort(src: &mut [i32]);
         fn hpx_sort_comp(src: &mut Vec<i32>, comp: fn(i32, i32) -> bool);
         fn hpx_merge(src1: &Vec<i32>, src2: &Vec<i32>, dest: &mut Vec<i32>);
@@ -73,8 +73,8 @@ pub fn count(vec: &Vec<i32>, value: i32) -> i64 {
     ffi::hpx_count(vec, value)
 }
 
-pub fn find(vec: &Vec<i32>, value: i32) -> Option<usize> {
-    match ffi::hpx_find(vec, value) {
+pub fn find(slice: &[i32], value: i32) -> Option<usize> {
+    match ffi::hpx_find(slice, value) {
         -1 => None,
         index => Some(index as usize),
     }
@@ -324,6 +324,10 @@ mod tests {
             let mut v2 = vec![0; 1_000_000]; // testing on a long vector
             ffi::hpx_fill(&mut v2, 7);
             assert!(v2.iter().all(|&x| x == 7));
+
+            let mut v3: Vec<i32> = Vec::new();
+            ffi::hpx_fill(&mut v3, 100);
+            assert!(v3.is_empty());
 
             ffi::finalize()
         };

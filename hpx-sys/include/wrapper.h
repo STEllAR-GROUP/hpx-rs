@@ -93,28 +93,18 @@ inline bool hpx_equal(rust::Slice<const int32_t> src, rust::Slice<const int32_t>
     );
 }
 
-inline void hpx_fill(rust::Vec<int32_t>& src, int32_t value) {
-    std::vector<int32_t> cpp_vec(src.begin(), src.end());
-    
-    hpx::fill(hpx::execution::par, cpp_vec.begin(), cpp_vec.end(), value);
-    
-    src.clear();
-    src.reserve(cpp_vec.size());
-    for (const auto& item : cpp_vec) {
-        src.push_back(item);
-    }
+inline void hpx_fill(rust::Slice<int32_t> src, int32_t value) {
+    hpx::fill(hpx::execution::par, src.begin(), src.end(), value);
 }
 
-inline int64_t hpx_find(const rust::Vec<int32_t>& src, int32_t value) {
-    std::vector<int32_t> cpp_vec(src.begin(), src.end());
-    
+inline int64_t hpx_find(rust::Slice<const int32_t> src, int32_t value) {
     auto result = hpx::find(hpx::execution::par,
-                            cpp_vec.begin(),
-                            cpp_vec.end(),
+                            src.begin(),
+                            src.end(),
                             value);
     
-    if (result != cpp_vec.end()) {
-        return static_cast<int64_t>(std::distance(cpp_vec.begin(), result));
+    if (result != src.end()) {
+        return static_cast<int64_t>(std::distance(src.begin(), result));
     }
     return -1;
 }
@@ -124,16 +114,8 @@ inline void hpx_sort(rust::Slice<int32_t> src) {
 }
 
 inline void hpx_sort_comp(rust::Vec<int32_t>& src, rust::Fn<bool(int32_t, int32_t)> comp) {
-    std::vector<int32_t> cpp_vec(src.begin(), src.end());
-    
-    hpx::sort(hpx::execution::par, cpp_vec.begin(), cpp_vec.end(),
+    hpx::sort(hpx::execution::par, src.begin(), src.end(),
         [&](int32_t a, int32_t b) { return comp(a, b); });
-    
-    src.clear();
-    src.reserve(cpp_vec.size());
-    for (const auto& item : cpp_vec) {
-        src.push_back(item);
-    }
 }
 
 inline void hpx_merge(const rust::Vec<int32_t>& src1, 
