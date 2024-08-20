@@ -29,7 +29,7 @@ pub mod ffi {
         fn hpx_find(src: &[i32], value: i32) -> i64;
         fn hpx_sort(src: &mut [i32]);
         fn hpx_sort_comp(src: &mut Vec<i32>, comp: fn(i32, i32) -> bool);
-        fn hpx_merge(src1: &Vec<i32>, src2: &Vec<i32>, dest: &mut Vec<i32>);
+        fn hpx_merge(src1: &[i32], src2: &[i32], dest: &mut Vec<i32>);
         fn hpx_partial_sort(src: &mut Vec<i32>, last: usize);
         fn hpx_partial_sort_comp(src: &mut Vec<i32>, last: usize, comp: fn(i32, i32) -> bool);
     }
@@ -78,6 +78,12 @@ pub fn find(slice: &[i32], value: i32) -> Option<usize> {
         -1 => None,
         index => Some(index as usize),
     }
+}
+
+pub fn merge(src1: &[i32], src2: &[i32]) -> Vec<i32> {
+    let mut dest = Vec::new();
+    ffi::hpx_merge(src1, src2, &mut dest);
+    dest
 }
 
 // ================================================================================================

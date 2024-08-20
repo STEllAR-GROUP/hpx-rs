@@ -118,53 +118,42 @@ inline void hpx_sort_comp(rust::Vec<int32_t>& src, rust::Fn<bool(int32_t, int32_
         [&](int32_t a, int32_t b) { return comp(a, b); });
 }
 
-inline void hpx_merge(const rust::Vec<int32_t>& src1, 
-                               const rust::Vec<int32_t>& src2, 
-                               rust::Vec<int32_t>& dest) {
-    std::vector<int32_t> cpp_src1(src1.begin(), src1.end());
-    std::vector<int32_t> cpp_src2(src2.begin(), src2.end());
-    std::vector<int32_t> cpp_dest(cpp_src1.size() + cpp_src2.size());
+inline void hpx_merge(rust::Slice<const int32_t> src1, 
+                      rust::Slice<const int32_t> src2, 
+                      rust::Vec<int32_t>& dest) {
+    dest.clear();
+    dest.reserve(src1.size() + src2.size());
+    
+    for (size_t i = 0; i < src1.size() + src2.size(); ++i) {
+        dest.push_back(0);
+    }
 
     hpx::merge(hpx::execution::par,
-               cpp_src1.begin(), cpp_src1.end(),
-               cpp_src2.begin(), cpp_src2.end(),
-               cpp_dest.begin());
-
-    dest.clear();
-    dest.reserve(cpp_dest.size());
-    for (const auto& item : cpp_dest) {
-        dest.push_back(item);
-    }
+               src1.begin(), src1.end(),
+               src2.begin(), src2.end(),
+               dest.begin());
 }
 
 inline void hpx_partial_sort(rust::Vec<int32_t>& src, size_t last) {
-    std::vector<int32_t> cpp_vec(src.begin(), src.end());
+    if (last > src.size()) {
+        last = src.size();
+    }
     
     hpx::partial_sort(hpx::execution::par, 
-                      cpp_vec.begin(), 
-                      cpp_vec.begin() + last, 
-                      cpp_vec.end());
-    
-    src.clear();
-    src.reserve(cpp_vec.size());
-    for (const auto& item : cpp_vec) {
-        src.push_back(item);
-    }
+                      src.begin(), 
+                      src.begin() + last, 
+                      src.end());
 }
 
 inline void hpx_partial_sort_comp(rust::Vec<int32_t>& src, size_t last, 
                                   rust::Fn<bool(int32_t, int32_t)> comp) {
-    std::vector<int32_t> cpp_vec(src.begin(), src.end());
+    if (last > src.size()) {
+        last = src.size();
+    }
     
     hpx::partial_sort(hpx::execution::par, 
-                      cpp_vec.begin(), 
-                      cpp_vec.begin() + last, 
-                      cpp_vec.end(),
+                      src.begin(), 
+                      src.begin() + last, 
+                      src.end(),
                       [&](int32_t a, int32_t b) { return comp(a, b); });
-    
-    src.clear();
-    src.reserve(cpp_vec.size());
-    for (const auto& item : cpp_vec) {
-        src.push_back(item);
-    }
 }
