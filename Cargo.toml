@@ -1,7 +1,7 @@
 [package]
 name = "hpx-rs"
 version = "0.1.0"
-authors = ["Shreyas Atre <shreyasatre16@gmail.com>", "Dikshant <dikshant.073@gmail.com"]
+authors = ["Shreyas Atre <shreyasatre16@gmail.com>", "Dikshant <dikshant.073@gmail.com>"]
 edition = "2021"
 readme = "README.md"
 repository = "https://github.com/STEllAR-GROUP/hpx-rs"
@@ -15,6 +15,13 @@ publish = false
 
 [dependencies]
 hpx-sys = { path = "hpx-sys", version = "0.1.0" }
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "cpy_bench"
+harness = false
 
 [workspace]
 members = []
