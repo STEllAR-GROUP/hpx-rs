@@ -34,6 +34,7 @@ pub mod ffi {
         fn hpx_partial_sort_comp(src: &mut Vec<i32>, last: usize, comp: fn(i32, i32) -> bool);
     }
 }
+pub use self::ffi::*;
 
 // ================================================================================================
 // Wrapper for the above Bindings.
