@@ -1,7 +1,7 @@
 #![feature(vec_into_raw_parts)]
 #![feature(random)]
 use core::array::from_fn;
-use std::{env, ffi::c_char, process, random};
+use std::{env, process, random};
 
 fn hpx_main(_: Vec<String>) -> i32 {
     let numbers: &[i32; 16384] = &from_fn(|_| random::random::<i32>());

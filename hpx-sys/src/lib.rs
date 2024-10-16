@@ -44,7 +44,7 @@ use std::env::Args;
 use std::ffi::{CString, CStr};
 use std::os::raw::c_char;
 
-static FUNC_HOLDER: Option<fn (Vec<String>) -> i32> = None;
+static mut FUNC_HOLDER: Option<fn (Vec<String>) -> i32> = None;
 
 // Convert arguments from *mut *mut c_char to Vec<String>
 // and call the saved Rust version of the function.
@@ -66,7 +66,7 @@ fn c_init(argc: i32, argv: *mut *mut c_char) -> i32 {
 
 pub fn init(func: fn(Vec<String>) -> i32, func_args: Vec<String>) -> i32
 {
-    FUNC_HOLDER = unsafe { Some(func) };
+    unsafe { FUNC_HOLDER = Some(func) };
     let str_args: Vec<&str> = func_args
         .iter()
         .map(|s| s.as_str())
