@@ -1,6 +1,7 @@
 #![doc(html_root_url = "https://github.com/STEllAR-GROUP/hpx-rs")]
 #![allow(bad_style, non_camel_case_types, unused_extern_crates)]
 #![allow(dead_code, unused_imports)]
+#![feature(vec_into_raw_parts)]
 
 #[cxx::bridge]
 pub mod ffi {
@@ -34,14 +35,49 @@ pub mod ffi {
         fn hpx_partial_sort_comp(src: &mut Vec<i32>, last: usize, comp: fn(i32, i32) -> bool);
     }
 }
-pub use self::ffi::*;
 
 // ================================================================================================
 // Wrapper for the above Bindings.
 // reffer to tests to understand how to use them. [NOTE: Not all bindings have wrapper.]
 // ================================================================================================
-use std::ffi::CString;
+use std::env::Args;
+use std::ffi::{CString, CStr};
 use std::os::raw::c_char;
+
+static FUNC_HOLDER: Option<fn (Vec<String>) -> i32> = None;
+
+// Convert arguments from *mut *mut c_char to Vec<String>
+// and call the saved Rust version of the function.
+fn c_init(argc: i32, argv: *mut *mut c_char) -> i32 {
+    let mut vec_args: Vec<String> = Vec::new();
+
+    for i in 0..argc {
+        // SAFETY: We get the argv from a conversion from Vec<String>.
+        // The conversion, which is safe, perserves the arguments.
+        // Therefore, no null pointers.
+
+        let c_str: &CStr = unsafe { CStr::from_ptr(*argv.offset(i as isize)) };
+        let string = c_str.to_string_lossy().into_owned();
+        vec_args.push(string.to_string());
+    }
+
+    unsafe { FUNC_HOLDER.unwrap()(vec_args) }
+}
+
+pub fn init(func: fn(Vec<String>) -> i32, func_args: Vec<String>) -> i32
+{
+    FUNC_HOLDER = unsafe { Some(func) };
+    let str_args: Vec<&str> = func_args
+        .iter()
+        .map(|s| s.as_str())
+        .collect::<Vec<&str>>();
+    let (argc, rust_argv) = create_c_args(&str_args);
+    let argv = rust_argv.into_raw_parts().0;
+
+    unsafe {
+        return self::ffi::init(c_init, argc, argv);
+    }
+}
 
 pub fn create_c_args(args: &[&str]) -> (i32, Vec<*mut c_char>) {
     let c_args: Vec<CString> = args.iter().map(|s| CString::new(*s).unwrap()).collect();
