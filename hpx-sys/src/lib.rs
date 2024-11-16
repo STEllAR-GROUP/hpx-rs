@@ -1,7 +1,6 @@
 #![doc(html_root_url = "https://github.com/STEllAR-GROUP/hpx-rs")]
 #![allow(bad_style, non_camel_case_types, unused_extern_crates)]
 #![allow(dead_code, unused_imports)]
-#![feature(vec_into_raw_parts)]
 
 #[cxx::bridge]
 pub mod ffi {
@@ -71,8 +70,8 @@ pub fn init(func: fn(Vec<String>) -> i32, func_args: Vec<String>) -> i32
         .iter()
         .map(|s| s.as_str())
         .collect::<Vec<&str>>();
-    let (argc, rust_argv) = create_c_args(&str_args);
-    let argv = rust_argv.into_raw_parts().0;
+    let (argc, mut rust_argv) = create_c_args(&str_args);
+    let argv = rust_argv.as_mut_ptr();
 
     unsafe {
         return self::ffi::init(c_init, argc, argv);

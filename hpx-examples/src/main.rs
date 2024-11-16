@@ -1,10 +1,9 @@
-#![feature(vec_into_raw_parts)]
-#![feature(random)]
 use core::array::from_fn;
-use std::{env, process, random};
+use std::{env, process};
+use rand;
 
 fn hpx_main(_: Vec<String>) -> i32 {
-    let numbers: &[i32; 16384] = &from_fn(|_| random::random::<i32>());
+    let numbers: &[i32; 16384] = &from_fn(|_| rand::random::<i32>());
     let list: &mut Vec<i32> = &mut Vec::<i32>::from(numbers);
     println!("{:#?}", list);
     // Sort the array in parallel.
