@@ -1,0 +1,8 @@
+[package]
+name = "hpx-examples"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+hpx-sys = { path = "../hpx-sys", version = "0.1.0" }
+rand = "0.8.5"
