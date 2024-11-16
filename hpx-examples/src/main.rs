@@ -1,6 +1,6 @@
 use core::array::from_fn;
-use std::{env, process};
 use rand;
+use std::{env, process};
 
 fn hpx_main(_: Vec<String>) -> i32 {
     let numbers: &[i32; 16384] = &from_fn(|_| rand::random::<i32>());
