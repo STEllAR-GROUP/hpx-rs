@@ -16,5 +16,12 @@ publish = false
 [dependencies]
 hpx-sys = { path = "hpx-sys", version = "0.1.0" }
 
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "cpy_bench"
+harness = false
+
 [workspace]
 members = [ "hpx-examples"]
